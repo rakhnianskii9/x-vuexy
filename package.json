@@ -11,8 +11,9 @@
     "lint:fix": "next lint --fix",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "build:icons": "tsx src/assets/iconify-icons/bundle-icons-css.ts",
+    "build:compose": "cd docker && sudo docker builder prune -af && sudo docker compose build",
     "migrate": "dotenv -e .env -- npx prisma migrate dev",
-    "postinstall": "prisma generate && npm run build:icons",
+    "postinstall": "prisma generate --schema=./src/prisma/schema.prisma && npm run build:icons",
     "removeI18n": "tsx src/remove-translation-scripts/index.ts"
   },
   "dependencies": {
@@ -36,7 +37,9 @@
     "@mui/lab": "6.0.0-beta.19",
     "@mui/material": "6.2.1",
     "@mui/material-nextjs": "6.2.1",
+    "@mui/utils": "6.2.1",
     "@prisma/client": "5.22.0",
+    "@radix-ui/react-dialog": "1.1.2",
     "@reduxjs/toolkit": "2.5.0",
     "@tanstack/match-sorter-utils": "8.19.4",
     "@tanstack/react-table": "8.20.6",
@@ -84,6 +87,7 @@
     "@iconify/tools": "4.1.1",
     "@iconify/types": "2.0.0",
     "@iconify/utils": "2.2.1",
+    "@tanstack/table-core": "^8.21.3",
     "@types/fs-extra": "^11.0.4",
     "@types/mapbox-gl": "^3.4.1",
     "@types/negotiator": "^0.6.3",

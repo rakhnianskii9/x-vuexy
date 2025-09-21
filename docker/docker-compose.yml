@@ -1,0 +1,53 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: runtime
+      args:
+        - NODE_VERSION=20.18.0
+        - PNPM_VERSION=9.15.0
+        - APP_PORT=3742
+    container_name: vuexy-app
+    env_file:
+      - ./.env
+    environment:
+      PORT: "3742"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3742:3742"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 8192m
+          cpus: '4'
+        reservations:
+          memory: 2048m
+          cpus: '1'
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: vuexy-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5433:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  db-data:

@@ -1,0 +1,50 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Next build artifacts
+.next
+.next/cache
+out
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# VCS
+.git
+.gitignore
+
+# Environment files
+.env
+.env.*
+!docker/.env
+
+# OS / Editor
+.DS_Store
+*.swp
+*.swo
+.idea
+.vscode
+
+# Tests / Coverage
+coverage
+.junit
+reports
+
+# Misc temp
+.tmp
+.temp
+cache
+**/dist
+
+# Prisma local artifacts
+src/prisma/dev.db
+src/prisma/*.db-journal
+
+# Docker
+Dockerfile.local
