@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="/home/projects/flowise"
+SCRIPT="$ROOT/packages/vladislav/mcp-launch-all.js"
+export MCP_CONFIG_PATH="${MCP_CONFIG_PATH:-$ROOT/.github/mcp/mcp.json}"
+export MCP_MEMORY_FILE_PATH="${MCP_MEMORY_FILE_PATH:-$ROOT/.github/mcp/memory.jsonl}"
+
+exec /usr/bin/node "$SCRIPT" "$@"

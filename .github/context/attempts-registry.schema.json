@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AttemptsRegistry",
+  "type": "object",
+  "required": ["attempts", "metadata"],
+  "properties": {
+    "attempts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["attemptId", "taskContext", "result", "timestamp"],
+        "properties": {
+          "attemptId": { "type": "string", "pattern": "^ATT-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{4}-\\d{3}$" },
+          "taskContext": { "type": "string", "minLength": 3 },
+          "planHash": { "type": "string", "pattern": "^sha256:[0-9a-f]{6,}$" },
+          "action": { "type": "string" },
+          "commands": { "type": "array", "items": { "type": "string" } },
+          "filesTouched": { "type": "array", "items": { "type": "string" } },
+          "metrics": { "type": "object", "additionalProperties": { "type": ["number", "string"] } },
+          "env": { "type": "object", "additionalProperties": { "type": ["number", "string", "boolean"] } },
+          "result": { "type": "string", "enum": ["success", "failure", "partial", "skipped", "rolled_back"] },
+          "evidence": { "type": "array", "items": { "type": "string" } },
+          "reasoning": { "type": "string" },
+          "output": { "type": "string" },
+          "blockers": { "type": "array", "items": { "type": "string" } },
+          "nextSteps": { "type": "array", "items": { "type": "string" } },
+          "timestamp": { "type": "string" },
+          "relatedAttempts": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["version", "created", "description"],
+      "properties": {
+        "version": { "type": "string" },
+        "created": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

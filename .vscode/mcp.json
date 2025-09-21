@@ -1,0 +1,82 @@
+{
+  "inputs": [
+    {
+      "id": "memory_file_path",
+      "type": "promptString",
+      "description": "Path to the memory storage file (optional)",
+      "password": false
+    }
+  ],
+  "servers": {
+    "sequentialthinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "type": "stdio"
+    },
+    "memory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "env": {
+        "MEMORY_FILE_PATH": "${input:memory_file_path}"
+      },
+      "type": "stdio"
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/home/projects/vuexy/full-version",
+        "/home/projects/vuexy/full-version/src",
+        "/home/projects/vuexy/full-version/scripts",
+        "/home/projects/vuexy/full-version/public",
+        "/home/projects/vuexy/full-version/.github",
+        "/home/projects/vuexy/full-version/new-flowise",
+        "/home/projects/arriWA/src/modules/facebook",
+        "/home/projects/arriWA/src/modules/kommo"
+      ],
+      "type": "stdio"
+    },
+    "knowledge-graph": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@itseasy21/mcp-knowledge-graph"
+      ],
+      "env": {
+        "MEMORY_FILE_PATH": "/home/projects/vuexy/full-version/.github/mcp/data/memory.jsonl"
+      },
+      "type": "stdio"
+    },
+    "prisma-postgres": {
+      "url": "https://mcp.prisma.io/mcp",
+      "type": "http"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp"
+      ],
+      "type": "stdio"
+    },
+    "apify": {
+      "url": "https://mcp.apify.com",
+      "type": "http"
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ],
+      "type": "stdio"
+    }
+  }
+}

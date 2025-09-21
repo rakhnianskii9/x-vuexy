@@ -1,0 +1,28 @@
+{
+  "apps": [
+    {
+      "name": "mcp-aggregator",
+      "script": "/home/projects/vuexy/full-version/.github/mcp/aggregator.js",
+      "args": "--watch",
+      "cwd": "/home/projects/vuexy/full-version/.github/mcp",
+      "instances": 1,
+      "exec_mode": "fork",
+      "env": {
+        "NODE_ENV": "production",
+        "MCP_BASE_PATH": "/home/projects/vuexy/full-version/.github/mcp/"
+      },
+      "watch": false,
+      "max_restarts": 50,
+      "min_uptime": "10s",
+      "restart_delay": 2000,
+      "log_file": "/home/projects/vuexy/full-version/logs/mcp-aggregator-combined.log",
+      "out_file": "/home/projects/vuexy/full-version/logs/mcp-aggregator-out.log",
+      "error_file": "/home/projects/vuexy/full-version/logs/mcp-aggregator-error.log",
+      "log_date_format": "HH:mm:ss DD.MM.YYYY",
+      "merge_logs": true,
+      "kill_timeout": 4000,
+      "autorestart": true,
+      "time": true
+    }
+  ]
+}

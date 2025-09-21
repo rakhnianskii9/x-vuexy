@@ -1,0 +1,12 @@
+{
+  "database": {
+    "schema": {},
+    "tables": [],
+    "relationships": []
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2025-08-24",
+    "description": "Database schema artifacts for GitHub Copilot"
+  }
+}

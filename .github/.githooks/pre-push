@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Protect pushing to main (mirror of upstream). Allows override with ALLOW_MAIN_PUSH=1.
+# Blocks force-push to main unless ALLOW_MAIN_PUSH=1.
+
+protected_branch="main"
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [[ $remote_ref == refs/heads/$protected_branch ]]; then
+    if [[ -z "$ALLOW_MAIN_PUSH" ]]; then
+      echo "[HOOK] Push to $protected_branch is blocked. This branch mirrors upstream."
+      echo "Set ALLOW_MAIN_PUSH=1 to override (use only for upstream sync)."
+      exit 1
+    fi
+    # Warn on force-push without override
+    if git rev-parse --verify $protected_branch >/dev/null 2>&1; then
+      if [[ $remote_sha != 0000000000000000000000000000000000000000 ]]; then
+        # Detect force push: remote tip not ancestor of local
+        if ! git merge-base --is-ancestor $remote_sha $local_sha; then
+          [[ -z "$ALLOW_MAIN_PUSH" ]] && {
+            echo "[HOOK] Force-push to $protected_branch blocked (no ALLOW_MAIN_PUSH)."; exit 1; }
+        fi
+      fi
+    fi
+  fi
+done
+
+exit 0

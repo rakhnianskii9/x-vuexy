@@ -1,0 +1,207 @@
+#!/usr/bin/env bash
+# Назначение: управление сессиями (.md с YAML-шапкой) — start|update|end
+# Формат имени: #<seq>--<HH:MM>-<dd.MM.yyyy>.md, таймзона: Asia/Ho_Chi_Minh
+# Обновляет только простые скаляры в YAML (status). Остальные данные — в Markdown-разделах.
+
+set -euo pipefail
+
+ROOT="/home/projects/new-flowise"
+SESS_DIR="$ROOT/.github/sessions"
+TZ="Asia/Ho_Chi_Minh"
+
+usage() {
+  cat >&2 <<USAGE
+usage: $0 <start|update|end> [options]
+
+start  --goals "цель1; цель2; цель3" [--date-format europe|iso]
+update [--done "...; ..."] [--progress "...; ..."] [--note "строка"] [--files "a/b,c/d"] [--event "описание"]
+end    [--deviation "..."] [--difficulties "..."] [--takeaways "..."] [--no-sync]
+USAGE
+  exit 1
+}
+
+ensure_dirs() { mkdir -p "$SESS_DIR"; }
+
+now_ts() { env TZ="$TZ" date +"%Y-%m-%d %H:%M:%S"; }
+fmt_time() { env TZ="$TZ" date +"%H:%M"; }
+fmt_date_europe() { env TZ="$TZ" date +"%d.%m.%Y"; }
+fmt_date_iso() { env TZ="$TZ" date +"%Y-%m-%d"; }
+compose_session_id() {
+  local dfmt="${1:-europe}"
+  local d
+  case "$dfmt" in
+    europe) d=$(fmt_date_europe);;
+    iso) d=$(fmt_date_iso);;
+    *) echo "unknown --date-format: $dfmt" >&2; exit 2;;
+  esac
+  echo "$(fmt_time)-$d"
+}
+
+next_seq() {
+  # Находит следующий порядковый номер (#001, #002, ...)
+  local n
+  n=$(ls -1 "$SESS_DIR" 2>/dev/null | sed -n 's/^#\([0-9]\+\)--.*/\1/p' | sort -n | tail -n1)
+  if [[ -z "${n:-}" ]]; then echo "1"; else echo $((10#$n + 1)); fi
+}
+
+find_current_session_file() {
+  # Текущей считаем последний изменённый .md
+  ls -1t "$SESS_DIR"/*.md 2>/dev/null | head -n1 || true
+}
+
+create_session_file() {
+  local goals_str="$1"; local date_fmt="${2:-europe}"
+  local seq sessionId fname
+  seq=$(next_seq)
+  sessionId="$(compose_session_id "$date_fmt")"
+  fname="$SESS_DIR/#${seq}--${sessionId}.md"
+
+  # Преобразуем цели в YAML-массив
+  IFS=';' read -r -a goals_arr <<< "$goals_str"
+  {
+    echo "---"
+  echo "sessionId: \"$sessionId\""
+    echo "status: \"active\""
+    echo "goals:"
+    for g in "${goals_arr[@]}"; do
+      g_trim=$(echo "$g" | sed 's/^ *//;s/ *$//')
+      [[ -n "$g_trim" ]] && printf "  - \"%s\"\n" "$g_trim"
+    done
+    echo "timeline: []"
+    echo "filesTouched: []"
+    echo "notes: \"\""
+    echo "progress:"
+    echo "  done: []"
+    echo "  inProgress: []"
+    echo "  blockers: []"
+    echo "---"
+    echo
+    echo "## Notes"
+    echo
+    echo "## Timeline"
+    echo "- $(now_ts) session started"
+    echo
+    echo "## Files touched"
+    echo
+    echo "## Progress"
+    echo "### Update $(now_ts)"
+  } > "$fname"
+
+  echo "$fname"
+}
+
+append_section_update() {
+  local file="$1"; shift
+  local done_str="" prog_str="" note_str="" files_str="" event_str=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --done) done_str="$2"; shift 2;;
+      --progress) prog_str="$2"; shift 2;;
+      --note) note_str="$2"; shift 2;;
+      --files) files_str="$2"; shift 2;;
+      --event) event_str="$2"; shift 2;;
+      *) echo "unknown option: $1" >&2; exit 2;;
+    esac
+  done
+
+  {
+    echo
+    echo "## Timeline"
+    if [[ -n "$event_str" ]]; then
+      echo "- $(now_ts) $event_str"
+    else
+      echo "- $(now_ts) session update"
+    fi
+    echo
+    echo "## Files touched"
+    if [[ -n "$files_str" ]]; then
+      IFS=',' read -r -a files_arr <<< "$files_str"
+      for f in "${files_arr[@]}"; do
+        f_trim=$(echo "$f" | sed 's/^ *//;s/ *$//')
+        [[ -n "$f_trim" ]] && printf -- "- %s\n" "$f_trim"
+      done
+    fi
+    echo
+    echo "## Notes"
+    [[ -n "$note_str" ]] && echo "$note_str"
+    echo
+    echo "## Progress"
+    echo "### Update $(now_ts)"
+    if [[ -n "$done_str" ]]; then
+      echo "- Done:"
+      IFS=';' read -r -a done_arr <<< "$done_str"
+      for d in "${done_arr[@]}"; do d_trim=$(echo "$d"|sed 's/^ *//;s/ *$//'); [[ -n "$d_trim" ]] && printf "  - %s\n" "$d_trim"; done
+    fi
+    if [[ -n "$prog_str" ]]; then
+      echo "- In Progress:"
+      IFS=';' read -r -a pr_arr <<< "$prog_str"
+      for p in "${pr_arr[@]}"; do p_trim=$(echo "$p"|sed 's/^ *//;s/ *$//'); [[ -n "$p_trim" ]] && printf "  - %s\n" "$p_trim"; done
+    fi
+  } >> "$file"
+}
+
+end_session() {
+  local file="$1"; shift
+  local dev="" diff="" take="" no_sync="0"
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --deviation) dev="$2"; shift 2;;
+      --difficulties) diff="$2"; shift 2;;
+      --takeaways) take="$2"; shift 2;;
+      --no-sync) no_sync="1"; shift 1;;
+      *) echo "unknown option: $1" >&2; exit 2;;
+    esac
+  done
+
+  # Обновляем статус в YAML (active -> ended)
+  tmpfile="${file}.tmp.$$"
+  sed '0,/^status: "active"/{s/^status: "active"/status: "ended"/}' "$file" > "$tmpfile" && mv "$tmpfile" "$file"
+
+  {
+    echo
+    echo "## Summary ($(now_ts))"
+    [[ -n "$dev" ]] && { echo "- Plan vs Actual: $dev"; }
+    [[ -n "$diff" ]] && { echo "- Difficulties: $diff"; }
+    [[ -n "$take" ]] && { echo "- Takeaways: $take"; }
+  } >> "$file"
+
+  if [[ "$no_sync" != "1" ]]; then
+    "$ROOT/.github/bin/update-ide" || true
+  fi
+}
+
+main() {
+  [[ $# -lt 1 ]] && usage
+  ensure_dirs
+  local cmd="$1"; shift || true
+  case "$cmd" in
+    start)
+      [[ $# -lt 2 || "$1" != "--goals" ]] && usage
+      local date_fmt="europe"
+      # parse optional --date-format
+      if [[ $# -ge 4 && "$3" == "--date-format" ]]; then
+        date_fmt="$4"; shift 2
+      fi
+      local file
+      file=$(create_session_file "$2" "$date_fmt")
+      echo "created: $file"
+      ;;
+    update)
+      local cur
+      cur=$(find_current_session_file)
+      [[ -z "$cur" ]] && { echo "no session file found" >&2; exit 3; }
+      append_section_update "$cur" "$@"
+      echo "updated: $cur"
+      ;;
+    end)
+      local cur
+      cur=$(find_current_session_file)
+      [[ -z "$cur" ]] && { echo "no session file found" >&2; exit 3; }
+      end_session "$cur" "$@"
+      echo "ended: $cur"
+      ;;
+    *) usage;;
+  esac
+}
+
+main "$@"

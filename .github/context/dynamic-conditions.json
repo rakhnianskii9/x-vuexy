@@ -1,0 +1,9 @@
+{
+  "conditions": [],
+  "bindings": [],
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2025-08-24",
+    "description": "Dynamic conditions for GitHub Copilot"
+  }
+}

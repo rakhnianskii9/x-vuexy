@@ -1,0 +1,9 @@
+{
+  "entities": [],
+  "relationships": [],
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2025-08-24",
+    "description": "Domain entities for GitHub Copilot"
+  }
+}

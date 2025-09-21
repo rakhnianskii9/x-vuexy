@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="/home/projects/new-flowise"
+SCHEMA="$ROOT/.github/context/attempts-registry.schema.json"
+FILE="$ROOT/.github/context/attempts-registry.json"
+
+echo "[validate-attempts] validating attempts-registry.json..."
+
+if command -v npx >/dev/null 2>&1; then
+  if npx -y ajv-cli --version >/dev/null 2>&1; then
+    npx -y ajv-cli validate -s "$SCHEMA" -d "$FILE" && echo "[validate-attempts] ✅ ajv valid" && exit 0 || { echo "[validate-attempts] ❌ ajv invalid"; exit 1; }
+  fi
+fi
+
+# Fallback: simple jq structure check
+if command -v jq >/dev/null 2>&1; then
+  jq -e 'has("attempts") and has("metadata") and (.attempts | type=="array")' "$FILE" >/dev/null \
+    && echo "[validate-attempts] ✅ jq structure ok" && exit 0 \
+    || { echo "[validate-attempts] ❌ jq structure failed"; exit 1; }
+else
+  echo "[validate-attempts] WARN: Neither ajv nor jq available; manual check required"
+fi
+exit 0

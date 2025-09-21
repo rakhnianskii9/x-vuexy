@@ -1,0 +1,10 @@
+{
+  "knowledge_graph": "→ knowledge-graph.jsonl",
+  "memory": "→ memory.jsonl", 
+  "sequential": "→ sequential.jsonl",
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2025-08-25",
+    "description": "Central memory storage hub"
+  }
+}

@@ -1,0 +1,1580 @@
+{
+  "requests": [
+    {
+      "requestId": "req-1",
+      "originalRequest": "Новый поток авторизации Facebook: кнопка на /signin с базовыми скоупами; после логина — модальное окно выбора Business Manager(ов); создать по одному Workspace на каждый выбранный BM; минимальные правки, без оверинжиниринга.",
+      "splitDetails": "Разбивка по минимальным шагам, переиспользующим существующие сервисы (OAuth URL, callback, provisioning): bootstrap → pending selection → выбор BMs → провижининг выбранных → идемпотентность/аудит.",
+      "tasks": [
+        {
+          "id": "task-1",
+          "title": "Bootstrap публичного OAuth на /signin (primary scopes)",
+          "description": "Сформировать публичный старт OAuth: email, public_profile, business_management; state пометить как bootstrap и сохранить returnUrl. DoD: ссылка на /facebook/oauth/url с нужными скоупами и флагом bootstrap выдаёт корректный URL.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Сформирован точный контракт запуска публичного OAuth с базовыми скоупами и флагом bootstrap без правок кода: GET /facebook/oauth/url?scopes=email,public_profile,business_management&returnUrl=<urlencoded>&bootstrap=1. Ответ: { url, state } — фронтенд выполняет redirect на url. DoD уточнён: URL формируется на стороне сервера, state несёт флаг bootstrap для дальнейшего callback-потока. Готов к имплементации при одобрении."
+        },
+        {
+          "id": "task-2",
+          "title": "Callback (bootstrap): сохранить токен, профиль и businessCandidates, без провижининга",
+          "description": "В callback при bootstrap: обменять code→token, получить /me и /me/businesses; записать grantedScopes, профиль, businessCandidates в config.syncState; статус: PENDING_SELECTION; провижининг НЕ запускать. DoD: в БД есть бизнес‑кандидаты и статус PENDING_SELECTION.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-3",
+          "title": "Endpoint выбора BMs и выборочный провижининг",
+          "description": "Добавить endpoint, принимающий список businessIds; переиспользовать текущий провижининг на каждый выбранный BM; обеспечить идемпотентность. DoD: по N выбранным BM создаётся ровно N новых workspaces в нужной Organization, без дублей.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-4",
+          "title": "Первая авторизация: создание Organization для FB‑пользователя",
+          "description": "Если у FB‑пользователя нет Organization — создать её до провижининга, связать владельца и workspace‑membership по действующим правилам. DoD: единичная Org на FB‑user, членство владельца корректно создано.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-5",
+          "title": "Идемпотентность, аудит и статусы",
+          "description": "Защита от повторного создания workspace на один и тот же BM; расширить audit/token события для bootstrap/selection; статусы ACTIVE после провижининга. DoD: повторные вызовы безопасны, токен‑аудит фиксируется.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-6",
+          "title": "Минимальная UI‑интеграция (/signin кнопка + модал)",
+          "description": "Кнопка «Войти через Facebook» на /signin → OAuth URL; модальное окно выборов BM из businessCandidates; POST на endpoint выбора. DoD: UX прототип описан и согласован; без лишней логики.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-2",
+      "originalRequest": "Новый поток авторизации Facebook: кнопка на /signin с базовыми скоупами; после логина — модальное окно выбора Business Manager(ов); создать по одному Workspace на каждый выбранный BM; минимальные правки, без оверинжиниринга. Код писать только после явного подтверждения.",
+      "splitDetails": "Минимальные шаги, переиспользующие текущие сервисы (OAuth URL, callback, provisioning): bootstrap → pending selection → выбор BMs → провижининг выбранных → идемпотентность/аудит → минимальная UI интеграция.",
+      "tasks": [
+        {
+          "id": "task-7",
+          "title": "Bootstrap публичного OAuth на /signin (primary scopes)",
+          "description": "Сформировать публичный старт OAuth: email, public_profile, business_management; state=bootstrap; сохранить returnUrl. DoD: ссылка на /facebook/oauth/url с флагом bootstrap и нужными скоупами строится корректно.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Подготовлена спецификация для bootstrap OAuth (без кода) с точным контрактом: scopes=email,public_profile,business_management; state={mode:bootstrap, returnUrl, nonce}; пример ссылки и DoD. Файл: /home/projects/new-flowise/docs/tech-docs/facebook/bootstrap-oauth-spec.md. Эндпоинта /facebook/oauth/url в репозитории не найден — требуется добавить на этапе реализации после апрува."
+        },
+        {
+          "id": "task-8",
+          "title": "Callback (bootstrap): сохранить токен, профиль и businessCandidates, без провижининга",
+          "description": "В callback при bootstrap: обменять code→token, получить /me и /me/businesses; записать grantedScopes, профиль, businessCandidates в config.syncState; статус: PENDING_SELECTION; провижининг НЕ запускать. DoD: в БД есть бизнес‑кандидаты и статус PENDING_SELECTION.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-9",
+          "title": "Endpoint выбора BMs и выборочный провижининг",
+          "description": "Endpoint принимает список businessIds; переиспользовать текущий провижининг на каждый выбранный BM; идемпотентность. DoD: по N выбранным BM создаётся ровно N новых workspaces в нужной Organization, без дублей.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-10",
+          "title": "Первая авторизация: создание Organization для FB‑пользователя",
+          "description": "Если у FB‑пользователя нет Organization — создать её до провижининга, связать владельца и workspace‑membership. DoD: единичная Org на FB‑user, членство владельца создано.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-11",
+          "title": "Идемпотентность, аудит и статусы",
+          "description": "Защита от повторного создания workspace на один и тот же BM; расширить audit для bootstrap/selection; статусы ACTIVE после провижининга. DoD: повторные вызовы безопасны, аудит фиксирует события.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-12",
+          "title": "Минимальная UI‑интеграция (/signin кнопка + модал)",
+          "description": "Кнопка «Войти через Facebook» на /signin → OAuth URL; модальное окно выборов BM из businessCandidates; POST на endpoint выбора. DoD: UX прототип описан и согласован; без лишней логики.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-3",
+      "originalRequest": "Реализация минимального кода Facebook: публичный OAuth bootstrap (/signin → FB), callback (сохранение state), endpoint выбора BMs (без секретов и .env добавлений).",
+      "splitDetails": "Реализация минимального кода Facebook: публичный OAuth bootstrap (/signin → FB), callback (сохранение state), endpoint выбора BMs (без секретов и .env добавлений).",
+      "tasks": [
+        {
+          "id": "task-13",
+          "title": "Найти точки интеграции в репозитории",
+          "description": "Обнаружить серверный фреймворк, точки входа, маршруты, где добавить /facebook/oauth/url и /facebook/oauth/callback, а также UI /signin кнопку.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Найдены точки интеграции: \n- Server API base: /api/v1 (packages/server/src/index.ts → this.app.use('/api/v1', flowiseApiV1Router)).\n- Роуты регистрируются в packages/server/src/routes/index.ts — добавим новый router: /facebook.\n- Файлы для добавления:\n  1) packages/server/src/controllers/facebook/index.ts — обработчики: getAuthUrl, oauthCallback, selectBusinesses.\n  2) packages/server/src/routes/facebook/index.ts — роутер GET /oauth/url, GET /oauth/callback, POST /select-businesses.\n  3) правка packages/server/src/routes/index.ts — router.use('/facebook', facebookRouter).\n- UI вход: packages/ui/src/views/auth/signIn.jsx — добавить кнопку «Войти через Facebook», ведущую на /api/v1/facebook/oauth/url?returnUrl=/auth/ssoSuccess (или нужный возврат).\n- Поиск существующего facebook/oauth не найден — реализуем с нуля в стиле ping/controller.\n"
+        },
+        {
+          "id": "task-14",
+          "title": "Добавить маршрут построения OAuth‑URL",
+          "description": "GET /facebook/oauth/url: формирует URL с email, public_profile, business_management; принимает returnUrl; state=bootstrap.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-15",
+          "title": "Добавить маршрут callback (bootstrap)",
+          "description": "GET /facebook/oauth/callback: валидирует state, принимает code, пока без обмена токенов; сохраняет state в сессии/КФ (минимально) для последующей выборки BMs.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-16",
+          "title": "Добавить endpoint выбора BMs (скелет)",
+          "description": "POST /facebook/select-businesses: принимает businessIds[], валидирует, пока без фактического провижининга.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-17",
+          "title": "UI: кнопка на /signin",
+          "description": "Добавить кнопку «Войти через Facebook» в UI, ведущую на /facebook/oauth/url?returnUrl=/signin/complete.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-4",
+      "originalRequest": "Продолжить реализацию нового FB SSO: обмен кода на токен в /oauth/callback, чтение профиля и /me/businesses, запись статуса PENDING_SELECTION; эндпоинты GET /facebook/businesses и POST /facebook/select-businesses для провижининга воркспейсов; модал на фронте для выбора BM.",
+      "splitDetails": "Продолжить реализацию нового FB SSO: обмен кода на токен в /oauth/callback, чтение профиля и /me/businesses, запись статуса PENDING_SELECTION; эндпоинты GET /facebook/businesses и POST /facebook/select-businesses для провижининга воркспейсов; модал на фронте для выбора BM.",
+      "tasks": [
+        {
+          "id": "task-18",
+          "title": "Callback: exchange code->token + fetch profile/businesses + persist PENDING_SELECTION",
+          "description": "В /api/v1/facebook/oauth/callback обработать code: запросить access_token (Graph /oauth/access_token), прочитать /me?fields=id,name,email,granted_scopes и /me/businesses, сохранить кандидатов (BM id,name) и granted_scopes, пометить пользователя статусом PENDING_SELECTION, вернуть redirect на UI.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Реализован обмен кода на токен в /oauth/callback через Graph API, чтение профиля и списка бизнес‑менеджеров (/me, /me/businesses), сохранение промежуточного статуса PENDING_SELECTION и кандидатов в req.session.facebookSelection; обработка ошибок и безопасный редирект на UI."
+        },
+        {
+          "id": "task-19",
+          "title": "API: GET businesses candidates",
+          "description": "Добавить публичный/авторизованный GET /api/v1/facebook/businesses, который вернёт список доступных для текущего пользователя Business Manager кандидатов из хранения PENDING_SELECTION (в сессии/кеше/таблице).",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-20",
+          "title": "API: POST select-businesses -> provision workspaces",
+          "description": "Добавить авторизованный POST /api/v1/facebook/select-businesses с массивом BM IDs; создать по правилу 1 BM = 1 workspace (идемпотентно), создать организацию для первого входа и привязать пользователя; выдать сессию/куки (verifyAndLogin + setTokenOrCookies).",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-21",
+          "title": "UI: Modal to select multiple BMs after login",
+          "description": "На фронте показать модальное окно после редиректа с FB, подтянуть GET /facebook/businesses, выбрать несколько BMs, отправить POST select-businesses и редиректнуть в созданный workspace.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-5",
+      "originalRequest": "Усилить внутреннюю инструкцию code-rules, чтобы ВСЕГДА использовать все МСП‑инструменты без исключений.",
+      "splitDetails": "Усилить внутреннюю инструкцию code-rules, чтобы ВСЕГДА использовать все МСП‑инструменты без исключений.",
+      "tasks": [
+        {
+          "id": "task-22",
+          "title": "Усилить требования «ВСЕГДА использовать МСП» в инструкциях",
+          "description": "Внести правки в .github/instructions/code-rules.instructions.md: явное требование 100% использования базовых МСП, фиксация деградаций, запрет на числовые названия задач; обновить разделы 0, 7.8 и 12.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Внесены минимальные правки в файл .github/instructions/code-rules.instructions.md: добавлен норматив «ВСЕГДА использовать МСП» в раздел 0; усилена секция 7.8 Task Manager с требованием базовых МСП при каждой нетривиальной задаче и запретом числовых названий задач; раздел 12 KPI дополнен метриками 100% применения базовых МСП и фиксацией деградаций. Проведена проверка контента на дубли и наличие ключевых формулировок."
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-6",
+      "originalRequest": "Обновить файл инструкций code-rules согласно предоставленной редакции пользователя, сохранив Markdown-структуру и copy-ready команды.",
+      "splitDetails": "Единая атомарная правка одного Markdown-файла с верификацией форматирования и ссылок.",
+      "tasks": [
+        {
+          "id": "task-23",
+          "title": "Обновить файл code-rules.instructions.md",
+          "description": "Переписать содержание на предоставленную редакцию. Добавить раздел «Анти-оверинжиниринг — НОРМАТИВНО», правки в поведении (approve_task_completion), скорректировать секцию 7.4 (MCP/filesystem, не shell), обновить секцию 16 (pnpm build:compose + примечание про sudo -E), привести примеры команд и JSON к copy-ready формату.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Файл code-rules.instructions.md обновлён по предоставленной редакции: оглавление дополнено секцией 16; в поведении уточнён approve_task_completion; добавлен раздел «Анти-оверинжиниринг — НОРМАТИВНО»; раздел 2 дополнен анти-оверинжинирингом; раздел 4 переписан (исправлена терминология, вставлен корректный JSON и copy-ready команды); вставлен новый раздел 16 с командами pnpm build:compose и sudo -E; сохранена структура и стиль, команды и блоки оформлены fenced-блоками."
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-7",
+      "originalRequest": "Реализовать полный FB SSO: список бизнесов, выбор и провижининг воркспейсов, миграции и сущности Facebook, сервис и фронт-модалка; без урезания функционала и без оверинжиниринга.",
+      "splitDetails": "Реализовать полный FB SSO: список бизнесов, выбор и провижининг воркспейсов, миграции и сущности Facebook, сервис и фронт-модалка; без урезания функционала и без оверинжиниринга.",
+      "tasks": [
+        {
+          "id": "task-24",
+          "title": "Добавить endpoint списка бизнесов",
+          "description": "GET /api/v1/facebook/businesses — вернуть businessCandidates и статус из сессии; добавить маршрут в whitelist.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-25",
+          "title": "Добавить endpoint выбора бизнесов и провижининга",
+          "description": "POST /api/v1/facebook/select-businesses — создать/найти воркспейсы на основе выбранных BM, установить сессию, вернуть redirectUrl; добавить маршрут в whitelist.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-26",
+          "title": "Создать миграции и сущности Facebook",
+          "description": "Добавить 5 таблиц: workspace_facebook_config, facebook_ad_account, facebook_pixel, facebook_page, facebook_token_audit; создать соответствующие TypeORM сущности.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-27",
+          "title": "Реализовать FacebookService с полным функционалом",
+          "description": "Методы: exchangeCodeForToken, getUserProfile, getBusinessManagers, createWorkspacesForBusinesses, syncAdAccounts, syncPixels, syncPages; шифрование/хэш токенов и аудит.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-28",
+          "title": "Интегрировать callback с флагом выбора",
+          "description": "В callback установить session.facebookSelection и редиректить с fb_selection=pending; обновить whitelist.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-29",
+          "title": "Добавить фронтенд модалку выбора БМ",
+          "description": "Компонент выбора нескольких BM, вызов POST select-businesses и редирект; кнопка на /signin уже есть.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-30",
+          "title": "Выполнить проверки и краткий смоук",
+          "description": "Линт/типы (если есть), краткая сборка/смоук и отчёт по качеству.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-8",
+      "originalRequest": "Интегрировать ранее подготовленный код FB SSO полностью: backend endpoints, whitelist, миграции/сущности Facebook, сервис и фронтенд модалка. Начинаем с endpoint списка бизнесов.",
+      "splitDetails": "Интегрировать ранее подготовленный код FB SSO полностью: backend endpoints, whitelist, миграции/сущности Facebook, сервис и фронтенд модалка. Начинаем с endpoint списка бизнесов.",
+      "tasks": [
+        {
+          "id": "task-31",
+          "title": "Добавить endpoint списка бизнесов",
+          "description": "GET /api/v1/facebook/businesses — вернуть businessCandidates и статус/профиль из сессии; добавить маршрут в whitelist.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-32",
+          "title": "Добавить endpoint выбора бизнесов и провижининга",
+          "description": "POST /api/v1/facebook/select-businesses — создать/найти воркспейсы на основе выбранных BM, установить сессию, вернуть redirectUrl; добавить маршрут в whitelist.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-33",
+          "title": "Создать миграции и сущности Facebook (Postgres)",
+          "description": "Добавить 5 таблиц: workspace_facebook_config, facebook_ad_account, facebook_pixel, facebook_page, facebook_token_audit; создать соответствующие TypeORM сущности в enterprise.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-34",
+          "title": "Реализовать FacebookService",
+          "description": "Методы: exchangeCodeForToken, getUserProfile, getBusinessManagers, createWorkspacesForBusinesses, syncAdAccounts, syncPixels, syncPages; шифрование/хэш токенов и аудит.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-35",
+          "title": "Интегрировать callback с флагом выбора",
+          "description": "В callback редиректить с fb_selection=pending для автопоказа модалки.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-36",
+          "title": "Добавить фронтенд модалку выбора БМ",
+          "description": "Компонент с мультиселектом, POST select-businesses, редирект; интеграция в приложение.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-37",
+          "title": "Проверки и краткий смоук",
+          "description": "Линт/типы (если есть), быстрая сборка, краткий отчёт.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-9",
+      "originalRequest": "Завершить FB SSO: реализовать POST /api/v1/facebook/select-businesses (идемпотентное создание workspace на BM), подготовить миграции и сущности для 5 таблиц FB, сервис синхронизации; фронтенд модал выбора BM; всё строго через Docker/Compose и с MCP-инструментами.",
+      "splitDetails": "Завершить FB SSO: реализовать POST /api/v1/facebook/select-businesses (идемпотентное создание workspace на BM), подготовить миграции и сущности для 5 таблиц FB, сервис синхронизации; фронтенд модал выбора BM; всё строго через Docker/Compose и с MCP-инструментами.",
+      "tasks": [
+        {
+          "id": "task-38",
+          "title": "Ревизия серверных маршрутов Facebook",
+          "description": "Проверить и доработать packages/server/src/enterprise/routes/facebook.route.ts: порядок экспорта, наличие GET /businesses, добавить POST /select-businesses с валидацией и идемпотентностью.",
+          "done": true,
+          "approved": true,
+          "completedDetails": "Добавлен POST /api/v1/facebook/select-businesses с валидацией входа и идемпотентной фиксацией выбора в сессии; перемещён и оформлен GET /businesses до export; русские комментарии по функциям. Маршруты опираются на ранее сохранённый facebookSelection из /oauth/callback."
+        },
+        {
+          "id": "task-39",
+          "title": "Миграции и сущности Facebook",
+          "description": "Добавить миграции и TypeORM сущности: workspace_facebook_config, facebook_ad_account, facebook_pixel, facebook_page, facebook_token_audit; связанные индексы и связи.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-40",
+          "title": "FacebookService и провижининг",
+          "description": "Реализовать сервис: создание организаций/воркспейсов на выбранные BM, аудит токена, синки аккаунтов/пикселей/страниц.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-41",
+          "title": "Фронтенд модальное окно выбора BM",
+          "description": "Добавить модал на /signin после коллбэка: GET /facebook/businesses, POST /select-businesses, редирект в рабочий воркспейс.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-42",
+          "title": "Валидация и Docker-сборка",
+          "description": "Запустить сборку и смоук-тесты строго через Docker/Compose, без локального билда; короткая проверка маршрутов.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-10",
+      "originalRequest": "Facebook SSO: внедрение миграций/сущностей для 5 таблиц FB и подготовка provisioning-сервиса и фронтенд выбора BM.",
+      "splitDetails": "Facebook SSO: внедрение миграций/сущностей для 5 таблиц FB и подготовка provisioning-сервиса и фронтенд выбора BM.",
+      "tasks": [
+        {
+          "id": "task-43",
+          "title": "Создать миграции и сущности Facebook",
+          "description": "Добавить 5 entity (workspace_facebook_config, facebook_ad_account, facebook_pixel, facebook_page, facebook_token_audit) и кросс-СУБД миграции; зарегистрировать их в индексах.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Добавлены 5 entity и кросс-СУБД миграции (postgres/mysql/mariadb/sqlite), зарегистрированы в индексах миграций и экспорте entities; проверен типовой анализ — ошибок не найдено."
+        },
+        {
+          "id": "task-44",
+          "title": "Реализовать FacebookService и provisioning",
+          "description": "Идempotентно создавать организацию/воркспейсы по выбранным BM; логировать аудиты токенов; подготовить синхронизацию ad accounts/pages/pixels.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-45",
+          "title": "Фронтенд модал выбора BM",
+          "description": "Получать /facebook/businesses, отправлять POST /facebook/select-businesses; UX множественного выбора; редирект к воркспейсам.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-46",
+          "title": "Валидация и Docker smoke",
+          "description": "Проверить типы, поднять через Docker/Compose, прогнать миграции, смоук е2е по маршрутам.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-11",
+      "originalRequest": "Починить 502: убрать циклическую зависимость getRunningExpressApp/serverApp в Facebook интеграции и подключить миграции Postgres для enterprise/facebook; затем пересобрать и проверить логи.",
+      "splitDetails": "Починить 502: убрать циклическую зависимость getRunningExpressApp/serverApp в Facebook интеграции и подключить миграции Postgres для enterprise/facebook; затем пересобрать и проверить логи.",
+      "tasks": [
+        {
+          "id": "task-47",
+          "title": "Найти и убрать обращения к getRunningExpressApp/serverApp в Facebook сервисах и роуте",
+          "description": "Проверить packages/server/src/enterprise/services/facebook/index.ts и enterprise/routes/facebook.route.ts, удалить обращения к getRunningExpressApp/serverApp, перейти на прямой TypeORM DataSource.",
+          "done": true,
+          "approved": true,
+          "completedDetails": "Удалены зависимости от getRunningExpressApp и сервисных классов, заменено на getDataSource() в FacebookService. Это устраняет ранний доступ к serverApp и потенциальный цикл инициализации."
+        },
+        {
+          "id": "task-48",
+          "title": "Подключить enterprise миграции Postgres для Facebook таблиц",
+          "description": "Проверить utils/typeormDataSource.ts и индексы миграций, убедиться что enterprise миграции (packages/server/src/enterprise/database/migrations/postgres/*.ts) подключены для Postgres.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Проверено: enterprise миграции Postgres уже подключены в packages/server/src/database/migrations/postgres/index.ts, включая AddFacebookTables1755840000001; DataSource использует postgresMigrations. Готово к применению."
+        },
+        {
+          "id": "task-49",
+          "title": "Обновить экспорт сущностей enterprise (если требуется)",
+          "description": "Проверить EnterpriseEntities.ts и общий список entities в DataSource, чтобы Facebook сущности попадали в сборку.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Проверено: Facebook сущности уже экспортируются в packages/server/src/database/entities/index.ts (WorkspaceFacebookConfig, FacebookAdAccount, FacebookPixel, FacebookPage, FacebookTokenAudit). Дополнительных правок не требуется."
+        },
+        {
+          "id": "task-50",
+          "title": "Собрать стек через Docker Compose",
+          "description": "Запустить pnpm build:compose, убедиться что контейнеры поднимаются.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-51",
+          "title": "Проверить логи и верифицировать отсутствие 502",
+          "description": "Собрать логи flowise-main/worker и убедиться что ошибок инициализации serverApp/циклических импортов нет.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-52",
+          "title": "Добавить FACEBOOK_* переменные в docker-compose",
+          "description": "Прописать pass-through переменные FACEBOOK_APP_ID, FACEBOOK_APP_SECRET, FACEBOOK_REDIRECT_URI, FACEBOOK_API_VERSION, FACEBOOK_OAUTH_RESPONSE_TYPE, FACEBOOK_POST_LOGIN_URL в docker/docker-compose.yml для сервиса сервера.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Добавлены pass-through переменные FACEBOOK_* и APP_URL в docker compose (source & prebuilt)."
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-12",
+      "originalRequest": "Упростить UX FB SSO: убрать модальное окно выбора BM; выполнять провижининг прямо в OAuth callback и редиректить на /chatflows; убедиться, что таблицы и сессия обновляются; очистить неиспользуемые эндпоинты.",
+      "splitDetails": "Упростить UX FB SSO: убрать модальное окно выбора BM; выполнять провижининг прямо в OAuth callback и редиректить на /chatflows; убедиться, что таблицы и сессия обновляются; очистить неиспользуемые эндпоинты.",
+      "tasks": [
+        {
+          "id": "task-53",
+          "title": "Очистка серверных эндпоинтов выбора BM",
+          "description": "Удалить /businesses, /select-businesses, /provision из facebook.route.ts; оставить комментарии про новый флоу.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Удалены эндпоинты /businesses, /select-businesses, /provision из facebook.route.ts; добавлены поясняющие комментарии про новый флоу (провижининг в callback). Линт/типизация: ошибок не обнаружено."
+        },
+        {
+          "id": "task-54",
+          "title": "Сборка и перезапуск через Docker Compose",
+          "description": "Пересобрать контейнеры, перезапустить стек; проверить наличие FACEBOOK_* env.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-55",
+          "title": "E2E-проверка OAuth → /chatflows",
+          "description": "Пройти авторизацию через Facebook, убедиться в редиректе на /chatflows без модалок.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-56",
+          "title": "Валидация записей в БД",
+          "description": "Проверить таблицы Workspace/Organization/WorkspaceFacebookConfig/FacebookTokenAudit через pgweb.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-57",
+          "title": "Опциональная чистка UI и кода",
+          "description": "Удалить неиспользуемый компонент businessSelectionModal.jsx и упоминания.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-13",
+      "originalRequest": "Полностью вырезать Vuexy из scripts/clean-user.sh и оставить только Flowise-логику; починить меню/поиск; убедиться, что все psql вызовы используют DB_PORT; провести быструю синтакс-проверку.",
+      "splitDetails": "Полностью вырезать Vuexy из scripts/clean-user.sh и оставить только Flowise-логику; починить меню/поиск; убедиться, что все psql вызовы используют DB_PORT; провести быструю синтакс-проверку.",
+      "tasks": [
+        {
+          "id": "task-58",
+          "title": "Удалить Vuexy и оставить Flowise-режимы",
+          "description": "Убрать все переменные/ветки/SQL и проверки, связанные с Vuexy; сократить меню до Email, Flowise User ID, Flowise Workspace ID; починить поиск только в Flowise.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Vuexy-логика полностью удалена из scripts/clean-user.sh. Меню сокращено до Email/Flowise User ID/Flowise Workspace ID. Поиск и удаление теперь работают только по Flowise. Все psql вызовы используют -p $DB_PORT. Файл успешно проходит bash -n синтакс-проверку."
+        },
+        {
+          "id": "task-59",
+          "title": "Валидация и мелкие правки",
+          "description": "Добавить -p $DB_PORT там, где пропущено; исправить выбор имени workspace; выполнить bash -n для синтакс-проверки.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-14",
+      "originalRequest": "Починить scripts/find-user.sh под фактическую схему БД (workspace_facebook_config, facebook_ad_account, facebook_token_audit): убрать несуществующие поля/meta, скорректировать JOIN-ы; добавить -p $DB_PORT; выполнить синтакс-проверку и пробный запуск.",
+      "splitDetails": "Починить scripts/find-user.sh под фактическую схему БД (workspace_facebook_config, facebook_ad_account, facebook_token_audit): убрать несуществующие поля/meta, скорректировать JOIN-ы; добавить -p $DB_PORT; выполнить синтакс-проверку и пробный запуск.",
+      "tasks": [
+        {
+          "id": "task-60",
+          "title": "Синхронизировать SQL-запросы со схемой БД",
+          "description": "Заменить обращения к wfc.* на существующие (fb_business_id, fb_business_name, fb_user_id); убрать businessManagerId/Name, tokens, syncState; починить audit JOIN через configId и поля event_type/scopes/details.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-61",
+          "title": "Тех. правки и валидация",
+          "description": "Добавить -p $DB_PORT во все psql-вызовы; bash -n проверка; пробный запуск pnpm find-user и фиксация результата.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-15",
+      "originalRequest": "Починить scripts/find-user.sh под фактическую схему БД (убрать meta), проверить DB_PORT в psql, прогнать скрипт и убедиться, что отчёт строится без ошибок.",
+      "splitDetails": "Починить scripts/find-user.sh под фактическую схему БД (убрать meta), проверить DB_PORT в psql, прогнать скрипт и убедиться, что отчёт строится без ошибок.",
+      "tasks": [
+        {
+          "id": "task-62",
+          "title": "Проверка и корректировка find-user.sh",
+          "description": "Убедиться, что нет ссылок на несуществующие поля (meta и пр.), что везде используется -p $DB_PORT, и что джойны соответствуют схеме.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-63",
+          "title": "Выполнить скрипт и сверить разделы отчёта",
+          "description": "Запустить pnpm find-user, убедиться, что отчёт генерируется, и в ключевых секциях нет ошибок БД.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-16",
+      "originalRequest": "Починить FB SSO в текущем проекте: проверить, что роуты смонтированы, и довести runtime-конфиг (docker/.env и docker/docker-compose.yml), чтобы контейнер получал FACEBOOK_* и APP_URL/POST_LOGIN; перезапустить и верифицировать OAuth до записи в БД.",
+      "splitDetails": "Починить FB SSO в текущем проекте: проверить, что роуты смонтированы, и довести runtime-конфиг (docker/.env и docker/docker-compose.yml), чтобы контейнер получал FACEBOOK_* и APP_URL/POST_LOGIN; перезапустить и верифицировать OAuth до записи в БД.",
+      "tasks": [
+        {
+          "id": "task-64",
+          "title": "Проверка монтажа роутов Facebook в сервере",
+          "description": "Найти и подтвердить подключение enterprise/routes/facebook.route.ts в маршрутизации сервера и экспорт в index.ts.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-65",
+          "title": "Аудит env-файлов и compose",
+          "description": "Проверить docker/.env и docker/docker-compose.yml на наличие/передачу FACEBOOK_APP_ID/SECRET/REDIRECT_URI и FACEBOOK_POST_LOGIN_URL, а также APP_URL.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-66",
+          "title": "Правка docker/docker-compose.yml",
+          "description": "Добавить пропуск FACEBOOK_* и FACEBOOK_POST_LOGIN_URL в service flowise, не затрагивая секреты в коде.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-67",
+          "title": "Уточнение и включение APP_URL/POST_LOGIN в docker/.env",
+          "description": "Разкомментировать APP_URL и задать FACEBOOK_POST_LOGIN_URL на /chatflows, без добавления новых .env файлов.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-68",
+          "title": "Пересборка/перезапуск и смоук-тест OAuth",
+          "description": "Перезапустить compose, пройти /signin → Facebook → callback; убедиться в редиректе на /chatflows и появлении записей через scripts/find-user.sh.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-17",
+      "originalRequest": "Починить рантайм FB SSO: пробросить FACEBOOK_* и APP_URL/POST_LOGIN через Docker/Compose, проверить монтаж роутов, перезапустить и сделать смоук-тест /oauth/url и базовый вызов /oauth/callback.",
+      "splitDetails": "Этапы: код (роуты), инфраструктура (compose/env), запуск, смоук-тесты.",
+      "tasks": [
+        {
+          "id": "task-69",
+          "title": "Проверка монтажа Facebook роутов в сервере",
+          "description": "Убедиться, что router '/facebook' подключён под '/api/v1' и WHITELIST_URLS содержит oauth/url и oauth/callback.",
+          "done": true,
+          "approved": true,
+          "completedDetails": "Маршруты подключены: в routes/index.ts смонтирован facebookRouter под '/facebook' и общий префикс '/api/v1'. В utils/constants.ts whitelist содержит '/api/v1/facebook/oauth/url' и '/api/v1/facebook/oauth/callback'. Таким образом, монтаж корректный."
+        },
+        {
+          "id": "task-70",
+          "title": "Проброс FACEBOOK_* переменных в docker-compose",
+          "description": "Добавить FACEBOOK_APP_ID/SECRET, FACEBOOK_REDIRECT_URI, FACEBOOK_OAUTH_RESPONSE_TYPE, FACEBOOK_API_VERSION, FACEBOOK_POST_LOGIN_URL в environment.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "docker-compose.yml теперь пробрасывает FACEBOOK_APP_ID/SECRET, FACEBOOK_REDIRECT_URI, FACEBOOK_OAUTH_RESPONSE_TYPE, FACEBOOK_API_VERSION и FACEBOOK_POST_LOGIN_URL к контейнеру flowise."
+        },
+        {
+          "id": "task-71",
+          "title": "Включить APP_URL и задать FACEBOOK_POST_LOGIN_URL в .env",
+          "description": "Раскомментировать APP_URL, выставить localhost:PORT, нормализовать FACEBOOK_REDIRECT_URI и добавить FACEBOOK_POST_LOGIN_URL.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "APP_URL выставлен на публичный домен https://flows.rakhnianskii.com, FACEBOOK_REDIRECT_URI и FACEBOOK_POST_LOGIN_URL приведены к домену. Это устранит ошибку Facebook “URL заблокирован” при авторизации."
+        },
+        {
+          "id": "task-72",
+          "title": "Перезапуск стека и валидация /api/v1/facebook/oauth/url",
+          "description": "Поднять docker-compose и сделать curl GET на /api/v1/facebook/oauth/url, ожидать { url, state }.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-73",
+          "title": "Смоук /oauth/callback без code",
+          "description": "Вызвать /api/v1/facebook/oauth/callback без параметров и убедиться, что происходит корректный редирект на FACEBOOK_POST_LOGIN_URL без 500.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-18",
+      "originalRequest": "Исправить редирект на /signin после Facebook SSO: обеспечить сохранение SSO токена и корректный редирект на /chatflows.",
+      "splitDetails": "Исправить редирект на /signin после Facebook SSO: обеспечить сохранение SSO токена и корректный редирект на /chatflows.",
+      "tasks": [
+        {
+          "id": "task-74",
+          "title": "Синхронизация сохранения SSO токена и редиректа",
+          "description": "Сделать storeSSOUserPayload асинхронной и ждать записи в Redis; сделать setTokenOrCookies асинхронной и await сохранение; обновить вызовы (facebook.route.ts и др.) для await; затем проверить типы и собрать быстрый отчёт.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Сделал storeSSOUserPayload async и await-запись в Redis; setTokenOrCookies стал async и ожидает сохранение перед редиректом. Во всех местах вызова добавлен await (Facebook, Google, GitHub, Auth0, Azure, JwtSSO; также login/refreshToken). Типы — без ошибок."
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-19",
+      "originalRequest": "После SSO (Facebook) всё ещё редиректит на /login вместо /chatflows. Нужна диагностика и фикc.",
+      "splitDetails": "Диагностика → сборка → смоук → фикс (при необходимости).",
+      "tasks": [
+        {
+          "id": "task-75",
+          "title": "Сверить актуальный код SSO-обмена токена",
+          "description": "Найти контроллер /api/v1/auth/sso-success, middleware setTokenOrCookies/storeSSOUserPayload и убедиться, что ожидание сохранения токена действительно есть в текущей ветке.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-76",
+          "title": "Проверить клиентский поток /sso-success",
+          "description": "Найти страницу/эффект, который вызывает authApi.ssoSuccess, убедиться в обработке 401/200 и последующих редиректах.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-77",
+          "title": "Запустить сборку/линт для проверки типовых ошибок",
+          "description": "Собрать пакеты сервер/ui, проверить типы и линтеры, чтобы исключить регрессии.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-78",
+          "title": "Сделать локальный смоук-тест SSO обмена",
+          "description": "Сымитировать вызов /api/v1/auth/sso-success с тестовым токеном (если возможно) или через unit/integration-мок, проверить 200/401.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-79",
+          "title": "Если найдена причина — подготовить минимальный фикс",
+          "description": "Внести точечные правки без изменения публичного API и в рамках стиля проекта, затем повторить проверку.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-20",
+      "originalRequest": "Починить цикл редиректа после Facebook SSO: после /oauth/callback попадаем на /login вместо /chatflows. Провести полную валидацию рантайма (Redis MODE, cookies/APP_URL, /sso-success 200), затем, если нужно, добавить минимальные логи.",
+      "splitDetails": "Починить цикл редиректа после Facebook SSO: после /oauth/callback попадаем на /login вместо /chatflows. Провести полную валидацию рантайма (Redis MODE, cookies/APP_URL, /sso-success 200), затем, если нужно, добавить минимальные логи.",
+      "tasks": [
+        {
+          "id": "task-80",
+          "title": "Проверка docker-compose и env параметров MODE/Redis/APP_URL/FACEBOOK_*",
+          "description": "Убедиться, что MODE=queue, Redis доступен, APP_URL соответствует протоколу/домену, заданы FACEBOOK_* и FACEBOOK_POST_LOGIN_URL.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-81",
+          "title": "Смоук рантайм /sso-success после callback",
+          "description": "Проверить, что ключ ssoTokenCache:* появляется в Redis и /api/v1/auth/sso-success возвращает 200 последовательно.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-82",
+          "title": "Проверка cookie-флагов и домена",
+          "description": "Убедиться, что secure/sameSite/domaine соответствуют текущему протоколу и домену, куки доходят до бэкенда.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-83",
+          "title": "Добавить точечные логи при необходимости",
+          "description": "Если 401 сохраняется, добавить логи в addSSOTokenCache и ssoSuccess (ключ, hit/miss, ошибки), не меняя логику.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-21",
+      "originalRequest": "Исправить SSO-цикл после Facebook: после авторизации редиректит на /login вместо /chatflows. Нужна полная проверка и завершение фикса.",
+      "splitDetails": "Исправить SSO-цикл после Facebook: после авторизации редиректит на /login вместо /chatflows. Нужна полная проверка и завершение фикса.",
+      "tasks": [
+        {
+          "id": "task-84",
+          "title": "Проверить runtime-кэш и ответ /sso-success",
+          "description": "Убедиться, что после callback появляется ключ ssoTokenCache:* (TTL 120s) и /api/v1/auth/sso-success стабильно возвращает 200.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-85",
+          "title": "Проверить режим и переменные окружения",
+          "description": "Проверить MODE=QUEUE, Redis URL/host/port/creds, APP_URL (протокол/домен), FACEBOOK_* и FACEBOOK_POST_LOGIN_URL.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-86",
+          "title": "Смоук-тест UI пути /sso-success",
+          "description": "Убедиться, что UI при 200 от /sso-success диспатчит пользователя и идёт на /chatflows; при 401 возвращается на /login.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-87",
+          "title": "Добавить точечные логи при необходимости",
+          "description": "Если 401 сохраняется, залогировать addSSOTokenCache (успех, ключ) и ssoSuccess (полученный токен, hit/miss) для точной диагностики.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-22",
+      "originalRequest": "Устранить петлю редиректа после Facebook SSO и довести до стабильной посадки на /chatflows.",
+      "splitDetails": "Устранить петлю редиректа после Facebook SSO и довести до стабильной посадки на /chatflows.",
+      "tasks": [
+        {
+          "id": "task-88",
+          "title": "Проверка среды Redis/QUEUE и наличия ssoTokenCache",
+          "description": "Подтвердить MODE=QUEUE, доступность Redis и появление ключей ssoTokenCache:* при коллбэке FB.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Проверены и подтверждены конфиги docker-compose (MODE=queue, REDIS_URL присутствует). Добавлены безопасные ретраи и SSO_DEBUG-логи для /sso-success и при кэшировании токена — для исключения микролатентности и упрощения диагностики."
+        },
+        {
+          "id": "task-89",
+          "title": "Проверка cookie/APP_URL/secure",
+          "description": "Убедиться, что secure и домен/протокол соответствуют фактическому хостингу; cookie устанавливаются в браузере.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-90",
+          "title": "Смоук эндпоинта /auth/sso-success",
+          "description": "Прямой вызов /api/v1/auth/sso-success?token=... сразу после редиректа и фиксация статуса (ожидается 200).",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-91",
+          "title": "Добавление точечных логов (если нужно)",
+          "description": "При сохранении 401 добавить логи вокруг addSSOTokenCache и ssoSuccess, не меняя публичное поведение.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-92",
+          "title": "Финальная валидация UI-потока",
+          "description": "Проверить, что UI стабильно уходит на /chatflows без возврата на /login.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-23",
+      "originalRequest": "Завершить фикс петли редиректа после Facebook SSO: исключить возврат на /signin после успешного обмена /sso-success и обеспечить переход на /chatflows.",
+      "splitDetails": "Завершить фикс петли редиректа после Facebook SSO: исключить возврат на /signin после успешного обмена /sso-success и обеспечить переход на /chatflows.",
+      "tasks": [
+        {
+          "id": "task-93",
+          "title": "Усилить /auth/resolve проверкой JWT cookie и SSO_DEBUG-логами",
+          "description": "Если req.user отсутствует, валидировать cookie token через jwt.verify; добавить SSO_DEBUG-логи выбранного redirect; цель — без ложного /signin после SSO.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Добавлена проверка JWT cookie в /api/v1/auth/resolve при отсутствии req.user; внедрены SSO_DEBUG-логи выбранного redirect и диагностические сообщения; минимальные правки без изменения публичного API. Файл: packages/server/src/enterprise/middleware/passport/index.ts. Типовые ошибки по файлу отсутствуют."
+        },
+        {
+          "id": "task-94",
+          "title": "Сборка сервера и проверка типов",
+          "description": "Выполнить pnpm -C packages/server build и убедиться в отсутствии ошибок/варнингов.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-95",
+          "title": "Перезапуск сервиса и включённый SSO_DEBUG",
+          "description": "Убедиться, что контейнер/процесс поднят с SSO_DEBUG=true; при необходимости перезапустить.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-96",
+          "title": "Смоук-тест авторизации через Facebook",
+          "description": "Пройти SSO-флоу и проверить, что UI приземляется на /chatflows без возврата на /signin; собрать логи /sso-success и /auth/resolve.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-24",
+      "originalRequest": "После Facebook SSO коротко вижу /chatflows, затем уносит на /login. Логи показывают успешный /sso-success и POST /api/v1/auth/resolve. Нужно устранить повторный редирект.",
+      "splitDetails": "После Facebook SSO коротко вижу /chatflows, затем уносит на /login. Логи показывают успешный /sso-success и POST /api/v1/auth/resolve. Нужно устранить повторный редирект.",
+      "tasks": [
+        {
+          "id": "task-97",
+          "title": "Проверка установки кук на /sso-success",
+          "description": "Убедиться, что access/refresh куки установлены доменом flows.rakhnianskii.com с корректными флагами (Secure, SameSite=Lax) и путями; что сервер в режиме queue не отключает куки для SSO-флоу.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "В /api/v1/auth/sso-success теперь не только возвращается JSON, но и устанавливается passport-сессия и JWT-куки через setTokenOrCookies (regenerateRefreshToken=true, isSSO=true). Это гарантирует наличие req.user и корректную работу /auth/resolve без редиректа на /login."
+        },
+        {
+          "id": "task-98",
+          "title": "Валидация клиента /auth/resolve и axios перехватчиков",
+          "description": "Проверить в UI, как обрабатывается ответ /auth/resolve и какие статусы/структура ожидаются; убедиться, что в случае 401 не происходит принудительный logout.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-99",
+          "title": "Проверка мидлвари whitelist и редиректов",
+          "description": "Проверить серверные редиректы/защиту маршрутов после /sso-success → /chatflows, нет ли middleware, которая чистит куки или вызывает 302 на /login.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-100",
+          "title": "Сборка и воспроизведение",
+          "description": "Пересобрать контейнер, выполнить SSO в инкогнито, собрать сетевые события (curl или браузер DevTools) для /sso-success, /auth/resolve, /me; подтвердить устранение проблемы.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-25",
+      "originalRequest": "Перенести конфигурацию процесса Vuexy из старого ecosystem.config.js в текущий файл проекта, не копируя секреты.",
+      "splitDetails": "Перенести конфигурацию процесса Vuexy из старого ecosystem.config.js в текущий файл проекта, не копируя секреты.",
+      "tasks": [
+        {
+          "id": "task-101",
+          "title": "Перенести процесс Vuexy в текущий ecosystem.config.js",
+          "description": "Добавить в /home/projects/new-flowise/ecosystem.config.js новый app с именем 'vuexy' на базе старой конфигурации, указав корректный cwd и минимально необходимые переменные окружения без секретов.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Добавлен процесс 'vuexy' в /home/projects/new-flowise/ecosystem.config.js с минимальным env без секретов. cwd указывает на /home/projects/vuexy/full-version. Синтаксис проверен через Node.js."
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-26",
+      "originalRequest": "Аудит FB авторизации: 1) максимальные данные по scopes email, public_profile, business_management; 2) что уже собираем и где храним; 3) чего не собираем и куда класть. Применить МСП.",
+      "splitDetails": "Аудит FB авторизации: 1) максимальные данные по scopes email, public_profile, business_management; 2) что уже собираем и где храним; 3) чего не собираем и куда класть. Применить МСП.",
+      "tasks": [
+        {
+          "id": "task-102",
+          "title": "Исследование Facebook Graph API/ Login по scopes email, public_profile, business_management",
+          "description": "Через Context7 собрать максимально возможные доступные поля/объекты и их условия получения для этих permissions. Уточнить версии API и ограничения.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-103",
+          "title": "Аудит репозитория: что уже забираем из FB и куда складываем",
+          "description": "Поиск интеграции FB (OAuth/Login), точки вызова Graph API, модели БД/хранилищ. Зафиксировать поля и маппинг.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-104",
+          "title": "Гэп-анализ: что не забираем и план хранения",
+          "description": "Сопоставить максимум из п.1 с текущей реализацией из п.2. Предложить безопасные места хранения и минимальные изменения.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-27",
+      "originalRequest": "Аудит и расширение Facebook аутентификации: 1) максимум данных по scopes email, public_profile, business_management из оф. документации; 2) что уже забираем/куда кладём; 3) чего не забираем/куда класть. Использовать MCP и best practices.",
+      "splitDetails": "Аудит и расширение Facebook аутентификации: 1) максимум данных по scopes email, public_profile, business_management из оф. документации; 2) что уже забираем/куда кладём; 3) чего не забираем/куда класть. Использовать MCP и best practices.",
+      "tasks": [
+        {
+          "id": "task-105",
+          "title": "Максимум данных по scopes",
+          "description": "Собрать из офдоков полный перечень полей/эндпоинтов, доступных при email, public_profile, business_management (Graph API v23) с ссылками.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Собран перечень «максимум возможных» данных по scopes email, public_profile, business_management (Graph API v23) с безопасными формулировками и ссылками на оф.доки. Вывод: 1) email → /me?fields=email (может быть null); 2) public_profile → базовые поля User (id,name + first_name,last_name,middle_name,name_format,short_name,picture{...}); 3) business_management → список бизнесов пользователя /me/businesses и базовые поля Business; доступ к owned_* активам чаще требует доп.пермишенов (ads_read/ads_management/pages_*), поэтому с одним business_management их чтение не гарантировано. Приложены ссылки на Permissions Reference и User/Business объекты."
+        },
+        {
+          "id": "task-106",
+          "title": "Аудит текущего кода",
+          "description": "Проверить что уже запрашиваем у Facebook и где сохраняем в БД/сессии; указать пути файлов.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-107",
+          "title": "Гэп-анализ и схема хранения",
+          "description": "Что можем и должны дополнительно забирать; сопоставить с имеющимися сущностями (ad accounts/pages/pixels); предложить места хранения.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-28",
+      "originalRequest": "Исследование внутренней папки docs/tech-docs/Facebook (старый проект) и извлечение ключевых фактов для current scopes/email/public_profile/business_management и активов (ad accounts, pages, pixels, CAPI, webhooks, system users).",
+      "splitDetails": "Исследование внутренней папки docs/tech-docs/Facebook (старый проект) и извлечение ключевых фактов для current scopes/email/public_profile/business_management и активов (ad accounts, pages, pixels, CAPI, webhooks, system users).",
+      "tasks": [
+        {
+          "id": "task-108",
+          "title": "Инвентаризация файлов Facebook техдоков",
+          "description": "Собрать список файлов и краткое назначение каждого.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-109",
+          "title": "Выжимка из ключевых документов",
+          "description": "Краткие тезисы по permissions, login/oauth, business-manager, pages/ad-accounts/pixels, webhooks, system users, CAPI/insights.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-110",
+          "title": "Мэппинг на текущие scopes и эндпоинты",
+          "description": "Сопоставить содержимое доков с email/public_profile/business_management и перечислить максимально доступные поля/эндпоинты.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-29",
+      "originalRequest": "Анализ внутренней папки docs/tech-docs/Facebook: инвентаризация, выжимка тезисов, мэппинг к scopes/endpoints для текущего Login flow",
+      "splitDetails": "Анализ внутренней папки docs/tech-docs/Facebook: инвентаризация, выжимка тезисов, мэппинг к scopes/endpoints для текущего Login flow",
+      "tasks": [
+        {
+          "id": "task-111",
+          "title": "Инвентаризация файлов и структуры Facebook-доков",
+          "description": "Собрать список ключевых файлов и их назначение в docs/tech-docs/Facebook",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Инвентаризация docs/tech-docs/Facebook завершена. Ключевые файлы и назначения: 1) permissions-reference.md — полный справочник разрешений: уровни доступа (standard/advanced), 90‑day rule, App Review/Business Verification, best practices; версия v23. 2) facebook-login-oauth.md — Facebook Login & OAuth: типы токенов (user/app/page/client), manual flow (dialog/oauth → oauth/access_token), GDPR/Data Deletion, ошибки и best practices; примеры SDK и curl; v23. 3) facebook-oauth.md (RU) — бизнес‑ориентированный OAuth: пошаговый flow, проверка и обмен кода, системные пользователи, Marketing API (adaccounts, campaigns, insights), rate limits, webhooks, безопасность и бизнес‑верификация; v23. 4) business-manager.md — Business Manager API: создание/обновление бизнеса, роли и пользователи, системные пользователи, управление активами (страницы, рекламные аккаунты, пиксели, каталоги), инвойсы и кредиты, партнёры; v23. 5) graph-api-reference.md — основы Graph API: узлы/рёбра/поля, versioning, выбор полей, пагинация, batch, ошибки, безопасность, оптимизация; примеры (Node/Python/SDK); v23."
+        },
+        {
+          "id": "task-112",
+          "title": "Выжимка тезисов",
+          "description": "Извлечь ключевые тезисы по OAuth, Permissions, Business Manager, Graph API",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-113",
+          "title": "Мэппинг к scopes и эндпоинтам",
+          "description": "Сопоставить тезисы с требуемыми scopes и конкретными Graph/Marketing API endpoints",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-30",
+      "originalRequest": "Проверить ВСЕ миграции по проекту: инвентаризация, валидация FB-схем и связей, указать где что создаётся; сопоставить с ранее предложенными местами хранения FB-полей.",
+      "splitDetails": "Проверить ВСЕ миграции по проекту: инвентаризация, валидация FB-схем и связей, указать где что создаётся; сопоставить с ранее предложенными местами хранения FB-полей.",
+      "tasks": [
+        {
+          "id": "task-114",
+          "title": "Инвентаризация миграций",
+          "description": "Найти все файлы миграций (всех БД) и собрать перечень с путями и датами/именами.",
+          "done": true,
+          "approved": true,
+          "completedDetails": "Инвентаризация миграций выполнена: найдены все каталоги и файлы миграций (base и enterprise) для postgres/mysql/mariadb/sqlite; подтверждена регистрация в index.ts и подключение в DataSource.ts. Подтверждено наличие AddFacebookTables для всех СУБД и её включение в массивы миграций."
+        },
+        {
+          "id": "task-115",
+          "title": "Чтение ключевых миграций",
+          "description": "Открыть и просмотреть все миграции, связанные с Facebook и базовыми сущностями (user, organization, workspace).",
+          "done": true,
+          "approved": true,
+          "completedDetails": "Ключевые миграции прочитаны. Итог: (1) ядро перефакторено в 1737076223692 (user/organization/workspace/role/organization_user/workspace_user + строгие FK/PK); (2) AddFacebookTables1755840000001 создаёт workspace_facebook_config, facebook_{ad_account,page,pixel,token_audit} с индексами; (3) ранние AddAuthTables/AddWorkspace/AddOrganization поддерживают исторический слой, но фактически заменены рефактором."
+        },
+        {
+          "id": "task-116",
+          "title": "Сопоставление с сущностями",
+          "description": "Проверить, что миграции соответствуют текущим entity-классам TypeORM.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Сущности TypeORM соответствуют миграциям: workspace_facebook_config (fb_business_id/name, fb_user_id, workspaceId, created/updated), facebook_ad_account (ad_account_id,name,currency,status, FK configId), facebook_page (page_id,name,category, FK configId), facebook_pixel (pixel_id,name,owner_business, FK configId), facebook_token_audit (event_type,scopes,details, FK configId). Core User/Organization/Workspace соответствуют рефактору 1737076223692; в User отсутствуют first_name/last_name/avatar_url (подтверждает, что это — предлагаемые расширения, не текущая схема)."
+        },
+        {
+          "id": "task-117",
+          "title": "Покрытие требований Facebook",
+          "description": "Сверить: что таблицы уже есть (workspace_facebook_config, pages, pixels, ad_accounts, token_audit), чего нет; зафиксировать расхождения.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-31",
+      "originalRequest": "Схема FB: какие таблицы и сущности нужно создать, что и как туда пишем?",
+      "splitDetails": "Схема FB: какие таблицы и сущности нужно создать, что и как туда пишем?",
+      "tasks": [
+        {
+          "id": "task-118",
+          "title": "Спецификация таблиц и сущностей",
+          "description": "Предложить список новых таблиц/расширений, поля, индексы, связи (минимальный надёжный набор без оверинжиниринга).",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Спецификация готова: (1) Расширение user: first_name, last_name, avatar_url (nullable); (2) Расширение workspace_facebook_config: fb_business_vertical, fb_business_timezone_id, fb_business_created_time, fb_primary_page_id или флаг is_primary на facebook_page; (3) Новые таблицы: facebook_business_user, facebook_system_user, facebook_pending_user — с уникальными (configId, external_id), полями name/role/status/permissions(json)/timestamps; (4) Индексы/связи: FK на workspace_facebook_config с CASCADE, уникальные составные индексы; (5) Политика записи: idempotent upsert по ключам, пагинация cursor-based, ошибки/метаданные — в facebook_token_audit.details, токены не сохраняем в БД."
+        },
+        {
+          "id": "task-119",
+          "title": "План заполнения данных",
+          "description": "Описать источники Graph API, моменты записи (callback, provisioning), upsert-правила и обработку пагинации/ошибок.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-120",
+          "title": "Проверка конфликтов с текущими миграциями",
+          "description": "Убедиться, что предлагаемые изменения не дублируют существующие таблицы/колонки; отметить, где нужны именно расширения.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-121",
+          "title": "Критерии приёмки и валидация",
+          "description": "Определить DoD, smoke-проверки и минимальные метрики качества.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-32",
+      "originalRequest": "Продолжить: добавить недостающие миграции (mysql/mariadb/sqlite) и подготовить шаги применения",
+      "splitDetails": "Продолжить: добавить недостающие миграции (mysql/mariadb/sqlite) и подготовить шаги применения",
+      "tasks": [
+        {
+          "id": "task-122",
+          "title": "Добавить миграции MySQL/MariaDB/SQLite",
+          "description": "Создать ExtendFacebookAndUser миграции в соответствующих каталогах enterprise для mysql, mariadb, sqlite",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-123",
+          "title": "Проверить скрипты запуска миграций",
+          "description": "Найти package.json и конфигурацию DataSource/скриптов для выполнения enterprise миграций",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-124",
+          "title": "Сформировать инструкцию по применению",
+          "description": "Подготовить точные команды запуска миграций в текущем окружении Docker/локально",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-33",
+      "originalRequest": "Настроить Redis для фронта Flowise (UI) — использовать уже запущенный Docker-контейнер Redis",
+      "splitDetails": "Настроить Redis для фронта Flowise (UI) — использовать уже запущенный Docker-контейнер Redis",
+      "tasks": [
+        {
+          "id": "task-125",
+          "title": "Определить текущий запуск Redis",
+          "description": "Изучить docker-compose файлы и найти сервис Redis: имя контейнера, порт, сеть, пароль, переменные окружения",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Изучены docker-compose и .env.example: Redis не определён как отдельный сервис в compose; переменные ожидаются: REDIS_HOST, REDIS_PORT (6379), REDIS_USERNAME (обычно пуст), REDIS_PASSWORD (если настроен), REDIS_TLS (флаг), REDIS_URL (альтернатива). Хост по умолчанию localhost внутри контейнера/ сети. Нужно уточнить где реально запущен standalone Redis контейнер (возможно во внешнем compose вне репо)."
+        },
+        {
+          "id": "task-126",
+          "title": "Выявить как фронт/сервер использует Redis",
+          "description": "Найти в коде переменные окружения и клиент Redis, понять требуемые креды для UI формы",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-127",
+          "title": "Сформировать инструкции заполнения формы Redis API во фронте",
+          "description": "Сопоставить поля формы (Host, Port, User, Password, SSL) с нашим окружением, указать значения/откуда брать",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-128",
+          "title": "Проверить подключение вручную",
+          "description": "Выполнить тестовое подключение redis-cli/скрипт из контейнера или локально к указанным хосту и порту с аутентификацией",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-129",
+          "title": "Подготовить короткую памятку",
+          "description": "Резюме шагов, риски, next steps (например, прод / staging различия)",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-34",
+      "originalRequest": "Сделать скрипт экспорта кодовой базы активным: запуск через `pnpm export-codebase`",
+      "splitDetails": "Сделать скрипт экспорта кодовой базы активным: запуск через `pnpm export-codebase`",
+      "tasks": [
+        {
+          "id": "task-130",
+          "title": "Активировать скрипт export-codebase",
+          "description": "Проанализировать корневой package.json, добавить скрипт export-codebase (tsx или ts-node), установить недостающие dev зависимости, протестировать выполнение `pnpm export-codebase`.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Добавлен скрипт export-codebase в root package.json (запуск через node). Добавлена dev зависимость ts-node (скрипт сам регистрирует ts-node при наличии). Успешно выполнен запуск: создан файл экспорта в каталоге code-export."
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-35",
+      "originalRequest": "Создать собственную ноду WhatsApp на основании Direct Reply",
+      "splitDetails": "Создать собственную ноду WhatsApp на основании Direct Reply",
+      "tasks": [
+        {
+          "id": "task-131",
+          "title": "Анализ Direct Reply ноды",
+          "description": "Изучить текущую реализацию DirectReply и определить какие поля и логика пригодны для WhatsApp ответа",
+          "done": true,
+          "approved": false,
+          "completedDetails": "DirectReply: единственный input 'directReplyMessage' (string, acceptVariable). run: берет строку, определяет isStreamable (если последний узел и есть sseStreamer) и стримит. Возвращает структуру {id,name,input:{},output:{content:message},state}. Для WhatsApp нужно: добавить поля номера получателя (acceptVariable), возможно mediaUrl (опц.), сохранить в output структуру { channel: 'whatsapp', to, content, media? }. Потенциально расширить цвет иконку (цвет WhatsApp #25D366). Категория можно оставить 'Agent Flows' или создать 'Channels'. Минимально: inputs: message, to (string), optional mediaUrl. hideOutput=true оставить. Логика стрима может быть аналогична, но стоит включить в SSE тот же формат что и output.content или JSON."
+        },
+        {
+          "id": "task-132",
+          "title": "Определение требований WhatsApp ноды",
+          "description": "Сформировать параметры: текст, номер, медиа? Вывести минимальный набор для MVP",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-133",
+          "title": "Проектирование структуры файла ноды",
+          "description": "Определить имя, категорию, иконку, цвет, inputs и outputs новой ноды whatsappReplyAgentflow",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-134",
+          "title": "Реализация кода новой ноды",
+          "description": "Создать файл TypeScript для WhatsAppReply, адаптировать логику DirectReply под отправку данных в state для последующей интеграции",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-135",
+          "title": "Добавление документации ноды",
+          "description": "Добавить поле documentation или README ссылку если требуется",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-136",
+          "title": "Валидация и линт",
+          "description": "Проверить сборку пакета components и отсутствие ошибок типов",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-36",
+      "originalRequest": "Документировать актуальные типы WhatsApp сообщений в файле wa-types-message.md по аналогии со структурой подписчика",
+      "splitDetails": "Документировать актуальные типы WhatsApp сообщений в файле wa-types-message.md по аналогии со структурой подписчика",
+      "tasks": [
+        {
+          "id": "task-137",
+          "title": "Сбор и финализация классификации типов",
+          "description": "Сформировать окончательный список групп и типов WhatsApp сообщений (session, interactive, template, commerce, special)",
+          "done": true,
+          "approved": true,
+          "completedDetails": "Группы: 1) Session: text,image,video,audio,document,sticker,location,contacts,reaction,address(Gupshup),flow(Gupshup session). 2) Interactive: button,list,product,product_list,flow (official),commerce (product/product_list). 3) Template: text, media (image/video/document), interactive buttons, authentication/OTP, location, product, carousel, flow, multi-product. 4) Commerce/Product (частично пересекается): single product, multi-product, product card carousel, catalog/flow. 5) Special/Service: reaction (дублируется), system/status webhooks, ephemeral, address, flow (session vs template), authentication/OTP. Карта маппинга верхнего уровня type: text|image|video|audio|document|sticker|location|contacts|reaction|interactive|template (+ address/flow для BSP). interactive.type подтипы: button|list|product|product_list|flow. Template components: header/body/footer/buttons/carousel/multi_product/auth/otp/location/flow/product. Уточнены зоны пересечений и будущие волны внедрения."
+        },
+        {
+          "id": "task-138",
+          "title": "Подготовка секций структуры payload и минимальных примеров",
+          "description": "Для каждого типа дать ключевые поля и минимальный JSON пример",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-139",
+          "title": "Добавление ограничений и лимитов",
+          "description": "Описать лимиты (длины, количества кнопок/секций/параметров) в табличном виде",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-140",
+          "title": "Формирование roadmap расширений",
+          "description": "Добавить секцию волн внедрения для нашей ноды WhatsAppSend",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-141",
+          "title": "Запись markdown в файл",
+          "description": "Перезаписать /docs/my-docs/wa-types-message.md оформленным содержимым",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-142",
+          "title": "Проверка и фиксация задачи",
+          "description": "Визуально проверить файл, отметить задачу выполненной",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-37",
+      "originalRequest": "Создание и заполнение файла wa-types-message.md полным справочником типов сообщений WhatsApp.",
+      "splitDetails": "Создание и заполнение файла wa-types-message.md полным справочником типов сообщений WhatsApp.",
+      "tasks": [
+        {
+          "id": "task-143",
+          "title": "Создание структуры документа",
+          "description": "Подготовить разделы классификации, session, interactive, template, commerce, special.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Полная структура + разделы 1-5 + классификация созданы в wa-types-message.md."
+        },
+        {
+          "id": "task-144",
+          "title": "Наполнение примерами payload",
+          "description": "Добавить минимальные JSON примеры для каждого типа и подтипа.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Переструктурирован документ: общий список без кода отдельно; далее детальные секции с примерами по каждому типу."
+        },
+        {
+          "id": "task-145",
+          "title": "Добавление лимитов и roadmap",
+          "description": "Сводная таблица ограничений, roadmap волн внедрения.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-146",
+          "title": "Нормализация output и схема",
+          "description": "Рекомендованный unified output и JSON schema черновик.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-147",
+          "title": "Финальная верификация и чек-лист",
+          "description": "Чек-лист интеграции, ссылки на связанные доки.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-38",
+      "originalRequest": "Получить техдоки Gupshup и проверить что каждый символ каждого вида сообщения поддержан и корректно отражён в локальной документации.",
+      "splitDetails": "Получить техдоки Gupshup и проверить что каждый символ каждого вида сообщения поддержан и корректно отражён в локальной документации.",
+      "tasks": [
+        {
+          "id": "task-148",
+          "title": "Сбор внешней документации Gupshup",
+          "description": "Получить официальные техдоки по типам WA сообщений (text,image,document,audio,video,template,interactive,location,sticker,contacts,list,buttons,product,catalog и др.) с источниками и датой.",
+          "done": true,
+          "approved": true,
+          "completedDetails": "Собраны официальные Gupshup WhatsApp docs: outbound templates, inbound types, outgoing free-form, create template. Извлечены ключевые символные/длиновые ограничения: text free-form 4096; template header 60, body 1024, footer 60, button text 20, quick replies max 3, call-to-action max 2, list: header 60, body 1024, footer 60, list button title 20, section title 24, list item title 24, list item description 72, list item postback 200, image/video captions 3000, file name 240, doc size 100MB, image 5MB, audio/video 16MB, stickers static only (animated not supported), sticker size <=100KB, 512x512, 16px margin, transparent background, multi-product: up to 30 products in up to 10 sections. Зафиксированы потенциальные расхождения: локально text ограничен 2000 (в доках 4096), локально указана поддержка animated sticker (в доках нет), локально указаны caption limits (частично совпадает, но sticker caption отсутствует в оф.доках), присутствуют типы reaction, address, flow message, ephemeral — не подтверждены текущими Gupshup страницами (flow подтверждается как отдельный interactive, address/ephemeral не найдены). Следующий шаг — анализ локального файла (task-149)."
+        },
+        {
+          "id": "task-149",
+          "title": "Анализ локального файла wa-types-message.md",
+          "description": "Извлечь из файла существующие типы и описания символов/ограничений.",
+          "done": true,
+          "approved": true,
+          "completedDetails": "Извлечены из локального файла wa-types-message.md все заявленные типы и текущие лимиты. Зафиксированы элементы для сопоставления: text (локально 4096 но вручную изменено на 2000 в таблице), image/video caption (локально 1024 vs офиц. 3000), file/document caption лимит не указан в офиц., sticker локально заявлена поддержка анимации vs офиц. docs: animated not supported, interactive button/list/product/list_flow лимиты присутствуют и совпадают с официальными (кроме отсутствия в локальном файле явного перечисления list item postback 200 chars и filename 240 chars). Готов к этапу сопоставления и формированию патча для whatsapp-api-media-limits.md."
+        },
+        {
+          "id": "task-150",
+          "title": "Сопоставление и проверка символов",
+          "description": "Сравнить официальные ограничения по каждому типу (длина, unicode, emoji, special chars) с локальным содержимым.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Сопоставление выполнено и файл whatsapp-api-media-limits.md обновлён: добавлена расширенная таблица media + character limits (4096 text, template header/body/footer 60/1024/60, button 20, list constraints, caption 3000, filename 240, sticker animated not supported). Добавлены consistency actions для корректировки wa-types-message.md. Готов сформировать отчет о расхождениях (task-151)."
+        },
+        {
+          "id": "task-151",
+          "title": "Отчет о расхождениях",
+          "description": "Сформировать подробный список несоответствий и рисков.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-152",
+          "title": "Подготовка правок документации",
+          "description": "Предложить патч к wa-types-message.md или дополнительные файлы (ADR) для синхронизации.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-39",
+      "originalRequest": "Нормализация WhatsApp лимитов: перевод media limits, таблица расхождений, исправление wa-types-message.md",
+      "splitDetails": "Нормализация WhatsApp лимитов: перевод media limits, таблица расхождений, исправление wa-types-message.md",
+      "tasks": [
+        {
+          "id": "task-153",
+          "title": "Перевод и локализация media limits",
+          "description": "Создать русскую версию whatsapp-api-media-limits с актуальными лимитами и разделом расхождений",
+          "done": true,
+          "approved": true,
+          "completedDetails": "Файл whatsapp-api-media-limits.ru.md создан, содержит: TL;DR таблицу, медиа размеры, символьные лимиты, интерактивные структуры, расхождения, источники, интеграцию, QA чеклист. Стиль выровнен со структурой arriwa-description (семантические блоки, таблицы, глоссарий)."
+        },
+        {
+          "id": "task-154",
+          "title": "Сформировать таблицу расхождений",
+          "description": "Подготовить отдельную таблицу Local vs Official vs Fix для текущего состояния wa-types-message.md",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Создан файл wa-types-message.discrepancies.md с таблицей Local vs Official vs Fix. Перечислены 12 расхождений (caption limits, sticker animation, filename 240, list row postback 200, template limits блок). Все помечены Pending."
+        },
+        {
+          "id": "task-155",
+          "title": "Исправить wa-types-message.md",
+          "description": "Применить корректные лимиты (4096 текст, 3000 caption, static stickers, list row/postback, filename 240) и убрать устаревшие утверждения",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Внесены правки в wa-types-message.md: caption image/video 3000, filename 240, убрана поддержка анимированных стикеров, ограничение 100KB, добавлен блок Central Template Limits, добавлен list row postback/payload 200. Осталось обновить discrepancy таблицу статусы на Done."
+        }
+      ],
+      "completed": false
+    },
+    {
+      "requestId": "req-40",
+      "originalRequest": "Распаковать архив /home/projects/new-flowise/whatsapp-project.tar.gz в безопасную директорию без перезаписи env",
+      "splitDetails": "Распаковать архив /home/projects/new-flowise/whatsapp-project.tar.gz в безопасную директорию без перезаписи env",
+      "tasks": [
+        {
+          "id": "task-156",
+          "title": "Распаковать архив WhatsApp",
+          "description": "Распаковать файл `/home/projects/new-flowise/whatsapp-project.tar.gz` в подпапку `sandbox/` c уникальным таймштампом, исключая любые .env* файлы. Ничего не перезаписывать вне sandbox.",
+          "done": true,
+          "approved": false,
+          "completedDetails": "Архив распакован в sandbox с уникальной меткой времени. Все .env* файлы были исключены. Показан верхнеуровневый список содержимого и превью глубиной до 2. Готов перейти к проверке результата."
+        },
+        {
+          "id": "task-157",
+          "title": "Проверить результат распаковки",
+          "description": "Показать дерево верхнего уровня распакованных файлов и подтвердить корректность структуры; без лишнего шума.",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
+    }
+  ]
+}
